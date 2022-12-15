@@ -69,6 +69,7 @@ namespace Tetris_10404남준성
                     if (CheckLine(y - yy))
                     {
                         ClearLine(y - yy);
+                        Game.score += 100;
                         y++;
                     }
                 }
@@ -84,6 +85,7 @@ namespace Tetris_10404남준성
                     board[xx, y] = board[xx, y-1];
                 }
             }
+
         }
 
         private bool CheckLine(int y)

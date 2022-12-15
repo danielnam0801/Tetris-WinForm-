@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Timers;
 
 namespace Tetris_10404남준성
 {
@@ -19,10 +20,15 @@ namespace Tetris_10404남준성
         int bwidth;
         int bheight;
 
-        Image[] block = new Image[7];
+        PictureBox background;
+        internal static Image[] block = new Image[7];
+
+        System.Timers.Timer timer;
+
         public Form1()
         {
             InitializeComponent();
+            game = Game.Singleton;
             Bitmap croppedBitmap = new Bitmap(@"C:\Users\user\Downloads\Untitled-3.png");
 
             for (int i = 0; i < 7; i++)
@@ -32,6 +38,32 @@ namespace Tetris_10404남준성
 
                 block[i] = cropBitmap;
             }
+            background = new PictureBox();
+            background = pictureBox1;
+            background.SendToBack();
+
+            timer = new System.Timers.Timer();
+            timer.Interval = 1000;
+            timer.Elapsed += new ElapsedEventHandler(timer5_Elapsed);
+            timer.Start();
+            CheckForIllegalCrossThreadCalls = false;
+
+        }
+
+        void timer5_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            moveDown();
+            Console.WriteLine("'dsfsdf");
+            label1.Text = "Level " + Game.level;
+            label2.Text = "Score " + Game.score;
+            counter++;
+            if (counter > leveld)
+            {
+                counter = 0;
+                leveld += 10;
+                Game.level++;
+                timer.Interval -= 100;
+            }
         }
 
         public Bitmap cropAtRect(Bitmap orgImg, Rectangle sRect)
@@ -39,6 +71,7 @@ namespace Tetris_10404남준성
             Rectangle destRect = new Rectangle(Point.Empty, sRect.Size);
 
             var cropImage = new Bitmap(destRect.Width, destRect.Height);
+
             using (var graphics = Graphics.FromImage(cropImage))
             {
                 graphics.DrawImage(orgImg, destRect, sRect, GraphicsUnit.Pixel);
@@ -53,30 +86,52 @@ namespace Tetris_10404남준성
             by = GameRule.BY; //20
             bwidth = GameRule.B_Width;  //30
             bheight = GameRule.B_Height;//30
+            //DrawPicutreBox(bx, by, bwidth, bheight);
+            //DrawPicutreBox(bx,by,bwidth,bheight);
+            label2.Text = "Score : " + Game.score;
+            label1.Text = "Level " + Game.level;
             SetClientSizeCore(bwidth * bx, bheight * by);
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
+            DrawPicutreBox(bx, by, bwidth, bheight);
             DrawGraduation(e.Graphics);
             DrawDiagram(e.Graphics);
             DrawDiaImage(e.Graphics);
             DrowBoard(e.Graphics);
             DoubleBuffered = true;
-            
+
+        }
+
+        private void DrawPicutreBox(int bx, int by, int bWidth, int bHeight)
+        {
+            Bitmap bmp;
+            background.Left = 0;
+            background.Top = 0;
+            background.Width = bx * bwidth + 20;
+            background.Height = by * bHeight + 20;
+            background.SizeMode = PictureBoxSizeMode.Zoom;
+            bmp = new Bitmap(@"C:\Users\user\Downloads\TetrisBackGround.jpg");
+            background.Image = bmp;
+            this.Controls.Add(background);
+            background.SendToBack();
         }
 
         private void DrowBoard(Graphics graphics)
         {
-            for(int xx = 0; xx < bx; xx++)
+            int bn = game.BlockNum;
+            //int tn = game.Turn;
+            for (int xx = 0; xx < bx; xx++)
             {
-                for(int yy = 0; yy < by; yy++)
+                for (int yy = 0; yy < by; yy++)
                 {
-                    if(game[xx, yy] != 0)
+                    if (game[xx, yy] != 0)
                     {
-                        Rectangle now_rt = new Rectangle(xx * bwidth + 2 , yy * bheight +2 , bwidth - 4, bheight - 4);
-                        graphics.DrawRectangle(Pens.DarkBlue, now_rt);
-                        graphics.FillRectangle(Brushes.GreenYellow, now_rt);
+                        Rectangle now_rt = new Rectangle(xx * bwidth + 2, yy * bheight + 2, bwidth - 4, bheight - 4);
+                        //graphics.DrawRectangle(Pens.DarkBlue, now_rt);
+                        //graphics.FillRectangle(Brushes.GreenYellow, now_rt);
+                        graphics.DrawImage(block[bn], xx * bwidth, yy * bheight, bwidth + 2, bheight + 2);
                     }
                 }
             }
@@ -96,7 +151,7 @@ namespace Tetris_10404남준성
                     if (BlockValue.bValues[bn, tn, xx, yy] != 0)
                     {
                         Rectangle rect = new Rectangle((now.X + xx) * bwidth + 2, (now.Y + yy) * bheight + 2, bwidth - 4, bheight - 4);
-                        graphics.DrawRectangle(dpen,rect);
+                        graphics.DrawRectangle(dpen, rect);
                     }
                 }
             }
@@ -115,7 +170,7 @@ namespace Tetris_10404남준성
                 {
                     if (BlockValue.bValues[bn, tn, xx, yy] != 0)
                     {
-                        graphics.DrawImage(block[bn], (now.X + xx) * bwidth, (now.Y + yy) * bheight, bwidth+2, bheight+2);
+                        graphics.DrawImage(block[bn], (now.X + xx) * bwidth, (now.Y + yy) * bheight, bwidth + 2, bheight + 2);
                     }
                 }
             }
@@ -135,9 +190,8 @@ namespace Tetris_10404남준성
 
         //    //temp.Dispose();
         //    //return newImage;
-        //    //[출처] (C#) 이미지 처리:  자르기 (3)|작성자 코딩ABC
 
-            
+
         //    //Bitmap croppedBitmap = new Bitmap(30,30,System.Drawing.Imaging.PixelFormat.Format24bppRgb);
         //    //Graphics temp = Graphics.FromImage(croppedBitmap);
         //    //temp.DrawImage(image, new Rectangle()
@@ -178,6 +232,7 @@ namespace Tetris_10404남준성
                 st.Y = cy * bheight;
                 et.X = bx * bwidth;
                 et.Y = st.Y;
+
                 graphics.DrawLine(Pens.Black, st, et);
             }
         }
@@ -190,13 +245,13 @@ namespace Tetris_10404남준성
                 case Keys.Left: MoveLeft(); return;
                 case Keys.Space: moveDown(); return;
                 case Keys.Up: MoveTurn(); return;
-                case Keys.Down: MoveSSDown(); return;   
+                case Keys.Down: MoveSSDown(); return;
             }
         }
 
         private void MoveSSDown()
         {
-            while(game.MoveDown())
+            while (game.MoveDown())
             {
                 Region rg = MakeRegion(0, -1); //rg 에는 이전 영역과 현재 영역을 합친 영역이 저장
                 Invalidate(rg);
@@ -234,18 +289,20 @@ namespace Tetris_10404남준성
             }
             else
             {
-                timer_down.Enabled = false;
+                timer.Enabled = false;
                 DialogResult re = MessageBox.Show("다시시작", "다시시작 여부", MessageBoxButtons.YesNo);
 
                 if (re == DialogResult.Yes)
                 {
                     game.Restart();
-                    timer_down.Enabled=true;
+                    Game.score = 0;
+                    Game.level = 0;
+                    timer.Enabled = true;
                     Invalidate();
                 }
                 else
                 {
-                    Close(); 
+                    Close();
                 }
             }
         }
@@ -326,10 +383,65 @@ namespace Tetris_10404남준성
                 Invalidate(rg);
             }
         }
+        //private void InitializeTimer()
+        //{
+        //    // Run this procedure in an appropriate event.  
+        //    counter = 0;
+        //    timer_down.Interval = 600;
+        //    timer_down.Enabled = true;
+        //    // Hook up timer's tick event handler.  
+        //    this.timer_down.Tick += new System.EventHandler(this.timer1_Tick);
+        //}
+
+        private int counter = 0;
+        private int leveld = 10;
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            moveDown();
+            //moveDown();
+            //Console.WriteLine("'dsfsdf");
+            //label1.Text = "Level " + Game.level;
+            //label2.Text = "Level " + Game.score;
+            //if (counter > leveld)
+            //{
+            //    counter = 0;
+            //    leveld += 10;
+            //    Game.level++;
+            //    timer_down.Interval -= 100;
+            //}
+        }
+
+
+
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            //textBox1.Text = "Score : " + Game.score;
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void timer1_Tick_2(object sender, EventArgs e)
+        {
+       
+        }
+
+        private void timer2_Tick(object sender, EventArgs e)
+        {
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
+

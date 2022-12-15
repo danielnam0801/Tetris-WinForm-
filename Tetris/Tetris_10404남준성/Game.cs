@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -12,6 +11,8 @@ namespace Tetris_10404남준성
     {
         Diagram now;
         Board gboard = Board.GameBoard;
+        public static int score = 0;
+        public static int level = 1;
 
         internal int this[int x, int y]
         {
@@ -125,7 +126,7 @@ namespace Tetris_10404남준성
                 }
             }
 
-            if (gboard.MoveEnable(now.BlockNum, Turn, now.X, now.Y+1))
+            if (gboard.MoveEnable(now.BlockNum, Turn, now.X, now.Y + 1))
             {
                 now.MoveDown();
                 return true;
@@ -139,7 +140,7 @@ namespace Tetris_10404남준성
             {
                 for (int yy = 0; yy < 4; yy++)
                 {
-                    if (BlockValue.bValues[now.BlockNum, (Turn+1) % 4, xx, yy] != 0)
+                    if (BlockValue.bValues[now.BlockNum, (Turn + 1) % 4, xx, yy] != 0)
                     {
                         if ((now.X + xx < 0) || (now.X + xx + 1 >= GameRule.BX) || (now.Y + yy + 1 >= GameRule.BY))
                         {
@@ -148,7 +149,7 @@ namespace Tetris_10404남준성
                     }
                 }
             }
-            if (gboard.MoveEnable(now.BlockNum, (Turn+1)%4, now.X, now.Y))
+            if (gboard.MoveEnable(now.BlockNum, (Turn + 1) % 4, now.X, now.Y))
             {
                 now.MoveTurn();
                 return true;
@@ -159,7 +160,7 @@ namespace Tetris_10404남준성
         internal bool Next()
         {
             now.Reset();
-            return gboard.MoveEnable(now.BlockNum , Turn , now.X , now.Y);
+            return gboard.MoveEnable(now.BlockNum, Turn, now.X, now.Y);
         }
 
         internal void Restart()
